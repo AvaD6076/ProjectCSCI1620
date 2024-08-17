@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ user.first_name }} {{ user.last_name }}</h1>
+        <p>Current Balance: ${{ user.balance }}</p>
+        
+        <form method="POST">
+            <input type="number" name="amount" placeholder="Enter amount" step="0.01" required>
+            <button type="submit" name="withdraw">Withdraw</button>
+            <button type="submit" name="deposit">Deposit</button>
+        </form>
+
+        <a href="{{ url_for('history') }}">View Transaction History</a><br>
+        <a href="{{ url_for('logout') }}">Logout</a>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,7 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 
 # Simulated database of users
 users = {}
@@ -32,70 +30,78 @@ class User:
     def show_transaction_history(self):
         return self.transaction_history
 
+class BankingApp(QMainWindow):
+    def __init__(self):
+        super(BankingApp, self).__init__()
+        uic.loadUi("home.ui", self)  # Load the UI file
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        pin = request.form['pin']
+        # Connect signals to slots
+        self.loginButton.clicked.connect(self.login)
+        self.registerButton.clicked.connect(self.show_register)
+        self.depositButton.clicked.connect(self.deposit)
+        self.withdrawButton.clicked.connect(self.withdraw)
+        self.historyButton.clicked.connect(self.show_history)
+        self.logoutButton.clicked.connect(self.logout)
+
+        self.current_user = None
+
+    def login(self):
+        first_name = self.firstNameInput.text()
+        last_name = self.lastNameInput.text()
+        pin = self.pinInput.text()
         user_key = f"{first_name.lower()}_{last_name.lower()}"
         if user_key in users and users[user_key].pin == pin:
-            session['user'] = user_key
-            return redirect(url_for('dashboard'))
+            self.current_user = users[user_key]
+            self.show_dashboard()
         else:
-            return render_template('index.html', error="Invalid credentials. Please try again.")
-    return render_template('index.html')
+            self.show_error("Invalid credentials. Please try again.")
 
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        pin = request.form['pin']
+    def show_register(self):
+        first_name = self.firstNameInput.text()
+        last_name = self.lastNameInput.text()
+        pin = self.pinInput.text()
         user_key = f"{first_name.lower()}_{last_name.lower()}"
         if user_key not in users:
             users[user_key] = User(first_name, last_name, pin)
-            return redirect(url_for('home'))
+            self.show_success("Registration successful. You can now log in.")
         else:
-            return render_template('register.html', error="User already exists.")
-    return render_template('register.html')
+            self.show_error("User already exists.")
 
+    def show_dashboard(self):
+        self.stackedWidget.setCurrentWidget(self.dashboardPage)
+        self.update_balance()
 
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    user = users[session['user']]
+    def update_balance(self):
+        self.balanceLabel.setText(f"Balance: ${self.current_user.check_balance():.2f}")
 
-    if request.method == 'POST':
-        if 'withdraw' in request.form:
-            amount = float(request.form['amount'])
-            if not user.withdraw(amount):
-                return render_template('dashboard.html', user=user, error="Insufficient funds.")
-        elif 'deposit' in request.form:
-            amount = float(request.form['amount'])
-            user.deposit(amount)
-    
-    return render_template('dashboard.html', user=user)
+    def deposit(self):
+        amount = float(self.amountInput.text())
+        self.current_user.deposit(amount)
+        self.update_balance()
 
+    def withdraw(self):
+        amount = float(self.amountInput.text())
+        if not self.current_user.withdraw(amount):
+            self.show_error("Insufficient funds.")
+        self.update_balance()
 
-@app.route('/history')
-def history():
-    if 'user' not in session:
-        return redirect(url_for('home'))
+    def show_history(self):
+        history = "\n".join(self.current_user.show_transaction_history())
+        QMessageBox.information(self, "Transaction History", history)
 
-    user = users[session['user']]
-    return render_template('history.html', user=user)
+    def logout(self):
+        self.current_user = None
+        self.stackedWidget.setCurrentWidget(self.homePage)
 
+    def show_error(self, message):
+        QMessageBox.critical(self, "Error", message)
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('home'))
+    def show_success(self, message):
+        QMessageBox.information(self, "Success", message)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app = QApplication([])
+    window = BankingApp()
+    window.show()
+    app.exec_()

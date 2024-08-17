@@ -1,21 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction History</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Transaction History</h1>
-        <ul>
-            {% for transaction in user.transaction_history %}
-                <li>{{ transaction }}</li>
-            {% endfor %}
-        </ul>
-        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
-</body>
-</html>
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QVBoxLayout, QPushButton, QHBoxLayout
+
+class TransactionHistory(QWidget):
+    def __init__(self, user):
+        super().__init__()
+
+        self.user = user
+
+        # Set the window title
+        self.setWindowTitle('Transaction History')
+
+        # Create the main layout
+        layout = QVBoxLayout()
+
+        # Header label
+        header_label = QLabel("Transaction History", self)
+        layout.addWidget(header_label)
+
+        # List widget to display the transaction history
+        self.transaction_list = QListWidget(self)
+        self.update_transaction_history()
+        layout.addWidget(self.transaction_list)
+
+        # Buttons for navigation
+        button_layout = QHBoxLayout()
+
+        self.back_button = QPushButton("Back to Dashboard", self)
+        self.logout_button = QPushButton("Logout", self)
+
+        button_layout.addWidget(self.back_button)
+        button_layout.addWidget(self.logout_button)
+
+        layout.addLayout(button_layout)
+
+        # Set layout to the window
+        self.setLayout(layout)
+
+        # Connect signals to methods
+        self.back_button.clicked.connect(self.back_to_dashboard)
+        self.logout_button.clicked.connect(self.logout)
+
+    def update_transaction_history(self):
+        # Clear the current list
+        self.transaction_list.clear()
+        
+        # Add each transaction to the list
+        for transaction in self.user.show_transaction_history():
+            self.transaction_list.addItem(transaction)
+
+    def back_to_dashboard(self):
+        # Implement navigation back to the dashboard
+        pass
+
+    def logout(self):
+        # Implement logout logic
+        pass
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+
+    # Example user object
+    user = User(first_name="John", last_name="Doe", pin="1234", balance=500.00)
+    user.transaction_history = ["Deposit: $100.00", "Withdrawal: $50.00"]  # Sample data
+
+    history_window = TransactionHistory(user)
+    history_window.show()
+
+    app.exec_()

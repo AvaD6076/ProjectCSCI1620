@@ -1,24 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATM Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>ATM Login</h1>
-        <form method="POST">
-            <input type="text" name="first_name" placeholder="First Name" required>
-            <input type="text" name="last_name" placeholder="Last Name" required>
-            <input type="password" name="pin" placeholder="4-Digit PIN" required>
-            <button type="submit">Login</button>
-            <a href="{{ url_for('register') }}">Register</a>
-        </form>
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-    </div>
-</body>
-</html>
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox
+
+class ATMLogin(QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        # Set the window title
+        self.setWindowTitle('ATM Login')
+        
+        # Create the main layout
+        layout = QVBoxLayout()
+
+        # Header label
+        header_label = QLabel("ATM Login", self)
+        layout.addWidget(header_label)
+
+        # Input fields
+        self.first_name_input = QLineEdit(self)
+        self.first_name_input.setPlaceholderText("First Name")
+        layout.addWidget(self.first_name_input)
+
+        self.last_name_input = QLineEdit(self)
+        self.last_name_input.setPlaceholderText("Last Name")
+        layout.addWidget(self.last_name_input)
+
+        self.pin_input = QLineEdit(self)
+        self.pin_input.setPlaceholderText("4-Digit PIN")
+        self.pin_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.pin_input)
+
+        # Buttons for Login and Register
+        button_layout = QHBoxLayout()
+
+        self.login_button = QPushButton("Login", self)
+        self.register_button = QPushButton("Register", self)
+
+        button_layout.addWidget(self.login_button)
+        button_layout.addWidget(self.register_button)
+        
+        layout.addLayout(button_layout)
+
+        # Error message label
+        self.error_label = QLabel("", self)
+        self.error_label.setStyleSheet("color: red;")
+        layout.addWidget(self.error_label)
+
+        # Set layout to the window
+        self.setLayout(layout)
+
+        # Connect signals to methods
+        self.login_button.clicked.connect(self.login)
+        self.register_button.clicked.connect(self.register)
+
+    def login(self):
+        first_name = self.first_name_input.text()
+        last_name = self.last_name_input.text()
+        pin = self.pin_input.text()
+        
+        # Here you'd add logic to validate the login credentials
+        if first_name == "" or last_name == "" or pin == "":
+            self.show_error("All fields are required.")
+        elif len(pin) != 4 or not pin.isdigit():
+            self.show_error("PIN must be a 4-digit number.")
+        else:
+            # Assuming login is successful
+            self.show_error("")  # Clear any previous error
+            # Logic to proceed to the dashboard
+            pass
+
+    def register(self):
+        # Implement the navigation to the registration screen
+        pass
+
+    def show_error(self, message):
+        self.error_label.setText(message)
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+
+    login_window = ATMLogin()
+    login_window.show()
+
+    app.exec_()

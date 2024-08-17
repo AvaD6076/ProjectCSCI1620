@@ -1,28 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATM Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome, {{ user.first_name }} {{ user.last_name }}</h1>
-        <p>Current Balance: ${{ user.balance }}</p>
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox
+
+class Dashboard(QWidget):
+    def __init__(self, user):
+        super().__init__()
         
-        <form method="POST">
-            <input type="number" name="amount" placeholder="Enter amount" step="0.01" required>
-            <button type="submit" name="withdraw">Withdraw</button>
-            <button type="submit" name="deposit">Deposit</button>
-        </form>
+        self.user = user
+        
+        # Set the window title
+        self.setWindowTitle('ATM Dashboard')
+        
+        # Create the main layout
+        layout = QVBoxLayout()
 
-        <a href="{{ url_for('history') }}">View Transaction History</a><br>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        # Welcome message
+        welcome_label = QLabel(f"Welcome, {user.first_name} {user.last_name}")
+        layout.addWidget(welcome_label)
 
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-    </div>
-</body>
-</html>
+        # Current balance display
+        self.balance_label = QLabel(f"Current Balance: ${user.check_balance():.2f}")
+        layout.addWidget(self.balance_label)
+
+        # Input for amount
+        self.amount_input = QLineEdit(self)
+        self.amount_input.setPlaceholderText("Enter amount")
+        layout.addWidget(self.amount_input)
+
+        # Buttons for withdraw and deposit
+        button_layout = QHBoxLayout()
+        self.withdraw_button = QPushButton("Withdraw", self)
+        self.deposit_button = QPushButton("Deposit", self)
+        
+        button_layout.addWidget(self.withdraw_button)
+        button_layout.addWidget(self.deposit_button)
+        layout.addLayout(button_layout)
+
+        # Links (handled as buttons in PyQt)
+        self.history_button = QPushButton("View Transaction History", self)
+        self.logout_button = QPushButton("Logout", self)
+        
+        layout.addWidget(self.history_button)
+        layout.addWidget(self.logout_button)
+
+        # Error message label
+        self.error_label = QLabel("", self)
+        self.error_label.setStyleSheet("color: red;")
+        layout.addWidget(self.error_label)
+
+        # Set layout to the window
+        self.setLayout(layout)
+
+        # Connect signals to methods
+        self.withdraw_button.clicked.connect(self.withdraw)
+        self.deposit_button.clicked.connect(self.deposit)
+        self.history_button.clicked.connect(self.view_history)
+        self.logout_button.clicked.connect(self.logout)
+
+    def withdraw(self):
+        try:
+            amount = float(self.amount_input.text())
+            if self.user.withdraw(amount):
+                self.update_balance()
+            else:
+                self.show_error("Insufficient funds.")
+        except ValueError:
+            self.show_error("Please enter a valid amount.")
+    
+    def deposit(self):
+        try:
+            amount = float(self.amount_input.text())
+            self.user.deposit(amount)
+            self.update_balance()
+        except ValueError:
+            self.show_error("Please enter a valid amount.")
+    
+    def update_balance(self):
+        self.balance_label.setText(f"Current Balance: ${self.user.check_balance():.2f}")
+        self.amount_input.clear()
+    
+    def view_history(self):
+        history = "\n".join(self.user.show_transaction_history())
+        QMessageBox.information(self, "Transaction History", history)
+    
+    def logout(self):
+        # Implement logout logic
+        pass
+    
+    def show_error(self, message):
+        self.error_label.setText(message)
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+
+    # Example user object
+    user = User(first_name="John", last_name="Doe", pin="1234", balance=500.00)
+
+    dashboard = Dashboard(user)
+    dashboard.show()
+
+    app.exec_()

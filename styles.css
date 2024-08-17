@@ -1,31 +1,96 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout
 
-.container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    text-align: center;
-}
+class StyledWidget(QWidget):
+    def __init__(self):
+        super().__init__()
 
-h1 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
+        # Set the window title
+        self.setWindowTitle('Styled PyQt App')
 
-input[type="text"],
-input[type="password"],
-input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    margin
+        # Set up the main layout
+        layout = QVBoxLayout()
+
+        # Header label
+        header_label = QLabel("Styled Header", self)
+        layout.addWidget(header_label)
+
+        # Input fields
+        self.input_text = QLineEdit(self)
+        self.input_text.setPlaceholderText("Text Input")
+        layout.addWidget(self.input_text)
+
+        self.input_password = QLineEdit(self)
+        self.input_password.setPlaceholderText("Password Input")
+        self.input_password.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.input_password)
+
+        # Button
+        self.button = QPushButton("Submit", self)
+        layout.addWidget(self.button)
+
+        # Set the layout to the window
+        self.setLayout(layout)
+
+        # Apply the styles to the widget
+        self.apply_styles()
+
+    def apply_styles(self):
+        self.setStyleSheet("""
+            QWidget {
+                font-family: Arial, sans-serif;
+                background-color: #f7f7f7;
+                margin: 0;
+            }
+
+            QWidget#StyledWidget {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+
+            QVBoxLayout {
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                width: 300px;
+                text-align: center;
+            }
+
+            QLabel {
+                color: #333;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            QLineEdit {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            QPushButton {
+                width: 100%;
+                padding: 10px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+
+if __name__ == '__main__':
+    app = QApplication([])
+
+    styled_window = StyledWidget()
+    styled_window.show()
+
+    app.exec_()
